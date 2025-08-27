@@ -1,771 +1,123 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>준성의 웹사이트</title>
+    <title>영단어 던지기</title>
     <style>
-        * {
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            background-color: #f0f0f0;
         }
-
-        :root {
-            --primary-color: #0066cc;
-            --secondary-color: #1a1a1a;
-            --accent-color: #00a8ff;
-            --text-color: #333;
-            --bg-color: #f8f9fa;
-            --card-bg: #ffffff;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
-            line-height: 1.6;
-            color: var(--text-color);
-            background-color: var(--bg-color);
-        }
-
-        /* 헤더 스타일 - 미니멀 디자인 */
-        header {
-            background: var(--secondary-color);
-            color: white;
-            padding: 80px 0;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, transparent 30%, rgba(0, 102, 204, 0.1) 50%, transparent 70%);
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-            0% {
-                transform: translateX(-100%);
-            }
-
-            100% {
-                transform: translateX(100%);
-            }
-        }
-
-        .header-content {
-            position: relative;
-            z-index: 1;
-        }
-
-        .name-tag {
-            display: inline-block;
-            background: var(--accent-color);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        header h1 {
-            font-size: 3em;
-            margin-bottom: 15px;
-            font-weight: 700;
-            letter-spacing: -1px;
-        }
-
-        header p {
-            font-size: 1.3em;
-            opacity: 0.9;
-            font-weight: 300;
-        }
-
-        /* 네비게이션 - 플로팅 스타일 */
-        nav {
-            background: var(--card-bg);
-            padding: 20px 0;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .nav-container {
-            max-width: 1000px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-        }
-
-        nav ul {
-            list-style: none;
-            display: flex;
-            gap: 40px;
-        }
-
-        nav a {
-            color: var(--text-color);
-            text-decoration: none;
-            padding: 8px 0;
-            position: relative;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        nav a::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--primary-color);
-            transition: width 0.3s;
-        }
-
-        nav a:hover {
-            color: var(--primary-color);
-        }
-
-        nav a:hover::after {
-            width: 100%;
-        }
-
-        .coming-soon-badge {
-            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
-            color: white;
-            padding: 6px 15px;
-            border-radius: 15px;
-            font-size: 0.8em;
-            font-weight: 500;
-            margin-left: 8px;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.7;
-            }
-        }
-
-        /* 메인 콘텐츠 */
         .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
-
-        section {
-            background: var(--card-bg);
-            margin: 40px 0;
-            padding: 60px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-            position: relative;
-        }
-
-        section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 5px;
-            height: 100%;
-            background: linear-gradient(to bottom, var(--primary-color), var(--accent-color));
-            border-radius: 20px 0 0 20px;
-        }
-
-        section h2 {
-            color: var(--secondary-color);
-            margin-bottom: 30px;
-            font-size: 2.2em;
-            font-weight: 700;
-            position: relative;
-            display: inline-block;
-        }
-
-        /* 소개 섹션 타이포그래피 */
-        #about p {
-            font-size: 1.1em;
-            line-height: 1.8;
+        .title {
+            font-size: 2rem;
             margin-bottom: 20px;
         }
-
-        .highlight {
-            background: linear-gradient(to right, var(--accent-color), var(--primary-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 600;
-        }
-
-        /* 스킬 섹션 - 미니멀 태그 스타일 */
-        .skills-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 30px;
-        }
-
-        .skill-tag {
-            background: var(--bg-color);
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-weight: 500;
-            transition: all 0.3s;
-            border: 2px solid transparent;
-            cursor: default;
-        }
-
-        .skill-tag:hover {
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 102, 204, 0.2);
-        }
-
-        .skill-category {
-            margin-bottom: 25px;
-        }
-
-        .skill-category h3 {
-            color: var(--primary-color);
-            margin-bottom: 15px;
-            font-size: 1.3em;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .skill-category i {
-            font-size: 1.2em;
-        }
-
-        /* 프로젝트 섹션 - 카드 없는 리스트 스타일 */
-        .project-list {
-            margin-top: 30px;
-        }
-
-        .project-item {
-            padding: 30px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .project-item:last-child {
-            border-bottom: none;
-        }
-
-        .project-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 15px;
-        }
-
-        .project-title {
-            font-size: 1.5em;
-            color: var(--secondary-color);
-            margin-bottom: 10px;
-        }
-
-        .project-tech {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 15px;
-        }
-
-        .tech-badge {
-            background: var(--primary-color);
+        .start-button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: #007bff;
             color: white;
-            padding: 5px 15px;
-            border-radius: 15px;
-            font-size: 0.85em;
-            font-weight: 500;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
-
-        /* 채팅 섹션 - 개발 중 스타일 */
-        .development-section {
+        .start-button:hover {
+            background-color: #0056b3;
+        }
+        .end-button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .end-button:hover {
+            background-color: #a71d2a;
+        }
+        .image-frame {
+            width: 220px;
+            height: 220px;
+            border: 3px solid #007bff;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            margin-top: 30px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .game-image {
+            max-width: 180px;
+            max-height: 180px;
+            border-radius: 10px;
+        }
+        .last-score {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            text-align: center;
-            border-radius: 20px;
-            padding: 80px 40px;
-            margin: 40px 0;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .development-section::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            animation: shimmer 3s infinite;
-        }
-
-        .development-section h2 {
-            color: white;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .development-section p {
-            font-size: 1.2em;
-            opacity: 0.9;
-            margin-bottom: 30px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .feature-preview {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-top: 50px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .feature-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 30px;
+            padding: 15px 25px;
             border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px);
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .feature-icon {
-            font-size: 3em;
+            font-size: 1.2rem;
+            font-weight: bold;
             margin-bottom: 20px;
-            opacity: 0.8;
-        }
-
-        .feature-card h3 {
-            font-size: 1.3em;
-            margin-bottom: 15px;
-        }
-
-        .feature-card p {
-            font-size: 1em;
-            opacity: 0.8;
-        }
-
-        .progress-bar {
-            background: rgba(255, 255, 255, 0.2);
-            height: 8px;
-            border-radius: 4px;
-            margin-top: 20px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            background: linear-gradient(90deg, #00c9ff, #92fe9d);
-            height: 100%;
-            border-radius: 4px;
-            animation: progressAnimation 3s ease-in-out infinite;
-        }
-
-        @keyframes progressAnimation {
-
-            0%,
-            100% {
-                width: 75%;
-            }
-
-            50% {
-                width: 85%;
-            }
-        }
-
-        /* 연락처 섹션 - 텍스트 중심 */
-        .contact-list {
-            margin-top: 30px;
-            display: grid;
-            gap: 20px;
-        }
-
-        .contact-row {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            padding: 15px;
-            background: var(--bg-color);
-            border-radius: 10px;
-            transition: all 0.3s;
-        }
-
-        .contact-row:hover {
-            background: linear-gradient(to right, rgba(0, 102, 204, 0.05), rgba(0, 168, 255, 0.05));
-            transform: translateX(10px);
-        }
-
-        .contact-row i {
-            font-size: 1.5em;
-            color: var(--primary-color);
-            width: 30px;
-        }
-
-        .contact-info {
-            flex: 1;
-        }
-
-        .contact-label {
-            font-size: 0.9em;
-            color: #666;
-            margin-bottom: 3px;
-        }
-
-        .contact-value {
-            font-weight: 500;
-            color: var(--secondary-color);
-        }
-
-        /* 푸터 */
-        footer {
-            background: var(--secondary-color);
-            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            min-width: 200px;
             text-align: center;
-            padding: 40px 0;
-            margin-top: 60px;
         }
-
-        footer p {
-            opacity: 0.8;
-        }
-
-        /* 애니메이션 */
-        section {
-            opacity: 0;
-            transform: translateY(30px);
-            animation: fadeInUp 0.8s forwards;
-        }
-
-        section:nth-child(1) {
-            animation-delay: 0.1s;
-        }
-
-        section:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        section:nth-child(3) {
-            animation-delay: 0.3s;
-        }
-
-        section:nth-child(4) {
-            animation-delay: 0.4s;
-        }
-
-        section:nth-child(5) {
-            animation-delay: 0.5s;
-        }
-
-        @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* 반응형 디자인 */
-        @media (max-width: 768px) {
-            .nav-container {
-                flex-direction: column;
-                gap: 20px;
-            }
-
-            nav ul {
-                gap: 20px;
-                padding: 0 20px;
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-
-            section {
-                padding: 40px 30px;
-            }
-
-            header h1 {
-                font-size: 2.2em;
-            }
-
-            .development-section {
-                padding: 60px 30px;
-            }
-
-            .feature-preview {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .project-header {
-                flex-direction: column;
-            }
+        .last-score.hidden {
+            display: none;
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-
 <body>
-    <!-- 헤더 -->
-    <header>
-        <div class="header-content">
-            <div class="name-tag">Developer</div>
-            <h1>문준성</h1>
-            <p>학생</p>
-        </div>
-    </header>
-
-    <!-- 네비게이션 -->
-    <nav>
-        <div class="nav-container">
-            <ul>
-                <li><a href="#about">소개</a></li>
-                <li><a href="#skills">기술</a></li>
-                <li><a href="#projects">프로젝트</a></li>
-                <li><a href="#chat">채팅 <span class="coming-soon-badge">개발중</span></a></li>
-                <li><a href="#contact">연락처</a></li>
-            </ul>
-        </div>
-    </nav>
-
-    <!-- 메인 콘텐츠 -->
     <div class="container">
-        <!-- 소개 섹션 -->
-        <section id="about">
-            <h2>안녕하세요!</h2>
-            <p>
-                저는 <span class="highlight">분당경영고 재학중인 2학년</span> 문준성입니다.
-                사용자 중심의 웹 애플리케이션을 만들고, 효율적인 시스템을 구축하는 것을 좋아합니다.
-            </p>
-            <p>
-                현재는 <strong>클라우드 아키텍처</strong>와 <strong>마이크로서비스</strong>에 관심을 가지고 있으며,
-                <strong>HTML</strong>과 <strong>Java</strong>에 관하여 배우고 있습니다.
-            </p>
-            <p>
-                <strong>현재:</strong> 분당경영고등학교 - IT소프트웨어과 (2024.03 ~ 현재)<br>
-            </p>
-        </section>
-
-        <!-- 기술 섹션 -->
-        <section id="skills">
-            <h2>기술 스택</h2>
-
-            <div class="skill-category">
-                <h3><i class="fas fa-code"></i> Frontend</h3>
-                <div class="skills-container">
-                    <span class="skill-tag">Rhino.js</span>
-                    <span class="skill-tag">TypeScript</span>
-                    <span class="skill-tag">HTML5/CSS3</span>
-                </div>
-            </div>
-
-            <div class="skill-category">
-                <h3><i class="fas fa-server"></i> Backend</h3>
-                <div class="skills-container">
-                    <span class="skill-tag">Node.js</span>
-                    <span class="skill-tag">Express.js</span>
-                    <span class="skill-tag">Python</span>
-                </div>
-            </div>
-
-            <div class="skill-category">
-                <h3><i class="fas fa-database"></i> Database & Cloud</h3>
-                <div class="skills-container">
-                    <span class="skill-tag">ORACLE SQL</span>
-                    <span class="skill-tag">AWS (EC2, S3, RDS)</span>
-                    <span class="skill-tag">Docker</span>
-                    <span class="skill-tag">Nginx</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- 프로젝트 섹션 -->
-        <section id="projects">
-            <h2>주요 프로젝트</h2>
-            <div class="project-list">
-                <div class="project-item">
-                    <div class="project-header">
-                        <div>
-                            <h3 class="project-title">📊 카카오톡 봇과 디스코드 봇 개발</h3>
-                            <p>카카오톡 봇은 메신저봇을 이용하여 Rhino.js으로 컴파일 하였고,
-                                디스코드 봇은 discord.py와 discord.js를 사용 하였습니다. </p>
-                        </div>
-                    </div>
-                    <div class="project-tech">
-                        <span class="tech-badge">Rhino.js</span>
-                        <span class="tech-badge">Javascript</span>
-                        <span class="tech-badge">Python</span>
-                    </div>
-                </div>
-
-                <div class="project-item">
-                    <div class="project-header">
-                        <div>
-                            <h3 class="project-title">💬 실시간 채팅 웹사이트</h3>
-                            <p>Socket.io를 활용한 실시간 채팅 시스템과 사용자 인증 시스템을 개발 중입니다.</p>
-                        </div>
-                    </div>
-                    <div class="project-tech">
-                        <span class="tech-badge">Node.js</span>
-                        <span class="tech-badge">Socket.io</span>
-                        <span class="tech-badge">MySQL</span>
-                    </div>
-                </div>
-
-                <div class="project-item">
-                    <div class="project-header">
-                        <div>
-                            <h3 class="project-title">🔐 데이터 베이스를 배우고 있습니다.</h3>
-                            <p>오라클 SQL을 이용해서 배우고 있습니다.</p>
-                        </div>
-                    </div>
-                    <div class="project-tech">
-                        <span class="tech-badge">Oracle SQL</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 채팅 시스템 개발 중 섹션 -->
-        <section id="chat" class="development-section">
-            <i class="fas fa-code" style="font-size: 4em; margin-bottom: 30px; opacity: 0.8;"></i>
-            <h2>🚀 실시간 채팅 & 로그인 시스템</h2>
-            <p>사용자 친화적인 실시간 채팅 시스템과 보안이 강화된 회원 시스템을 개발하고 있습니다.</p>
-
-            <div class="feature-preview">
-                <div class="feature-card">
-                    <div class="feature-icon">💬</div>
-                    <h3>실시간 채팅</h3>
-                    <p>Socket.io 기반의 실시간 메시징 시스템으로 빠르고 안정적인 채팅 경험을 제공합니다.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">🔐</div>
-                    <h3>보안 로그인</h3>
-                    <p>JWT 토큰과 bcrypt 암호화를 사용한 안전한 사용자 인증 시스템을 구축하고 있습니다.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">📱</div>
-                    <h3>반응형 디자인</h3>
-                    <p>모든 디바이스에서 완벽하게 작동하는 모바일 친화적인 UI/UX를 제공합니다.</p>
-                </div>
-            </div>
-
-            <div style="margin-top: 40px;">
-                <p style="font-size: 1.1em; margin-bottom: 15px;">개발 진행률</p>
-                <div class="progress-bar">
-                    <div class="progress-fill"></div>
-                </div>
-                <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.8;">백엔드 서버 구축 및 데이터베이스 설계 진행 중...</p>
-            </div>
-        </section>
-
-        <!-- 연락처 섹션 -->
-        <section id="contact">
-            <h2>연락처</h2>
-            <div class="contact-list">
-                <div class="contact-row">
-                    <i class="fas fa-envelope"></i>
-                    <div class="contact-info">
-                        <div class="contact-label">이메일</div>
-                        <div class="contact-value">s25-20404@bundang-mgt.hs.kr</div>
-                    </div>
-                </div>
-
-                <div class="contact-row">
-                    <i class="fab fa-github"></i>
-                    <div class="contact-info">
-                        <div class="contact-label">GitHub</div>
-                        <div class="contact-value">github.com/MoonJunSung</div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <div class="image-frame">
+            <img src="logo.png" alt="게임 로고" class="game-image">
+        </div>
+        <div class="title">영단어 던지기</div>
+        <div class="last-score hidden" id="lastScore">마지막 점수: 0</div>
+        <button class="start-button" onclick="startGame()" alt="게임 시작">게임 시작</button>
+        <button class="end-button" onclick="confirmExit()" alt="게임 종료">게임 종료</button>
     </div>
-
-    <!-- 푸터 -->
-    <footer>
-        <p>© 2025 문준성. Hosted on iwinv with ❤️</p>
-    </footer>
-
     <script>
-        // 부드러운 스크롤
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-
-        // 스크롤 시 네비게이션 하이라이트
-        window.addEventListener('scroll', () => {
-            const sections = document.querySelectorAll('section');
-            const navLinks = document.querySelectorAll('nav a');
-
-            let current = '';
-            sections.forEach(section => {
-                const sectionTop = section.offsetTop;
-                const sectionHeight = section.clientHeight;
-                if (scrollY >= (sectionTop - 200)) {
-                    current = section.getAttribute('id');
-                }
-            });
-
-            navLinks.forEach(link => {
-                link.style.color = '';
-                if (link.getAttribute('href').slice(1) === current) {
-                    link.style.color = 'var(--primary-color)';
-                }
-            });
-        });
-
-        // 개발 진행률 애니메이션 (페이지 로드 시)
-        window.addEventListener('load', () => {
-            const progressFill = document.querySelector('.progress-fill');
-            if (progressFill) {
-                progressFill.style.width = '0%';
-                setTimeout(() => {
-                    progressFill.style.transition = 'width 2s ease-in-out';
-                    progressFill.style.width = '78%';
-                }, 500);
+        // 페이지 로드 시 마지막 점수 표시
+        window.onload = function() {
+            const lastScore = localStorage.getItem('finalScore');
+            const lastScoreElement = document.getElementById('lastScore');
+            
+            if (lastScore && lastScore !== '0') {
+                lastScoreElement.textContent = `마지막 점수: ${lastScore}`;
+                lastScoreElement.classList.remove('hidden');
+            } else {
+                lastScoreElement.classList.add('hidden');
             }
-        });
+        };
+
+        function startGame() {
+            window.location.href = "selectmenu.html"; // 이동할 페이지 경로
+        }
+        function confirmExit() {
+            const userConfirmed = confirm("종료 하시겠습니까?");
+            if (userConfirmed) {
+                alert("게임이 종료되었습니다.");
+                window.close();
+            }
+        }
     </script>
 </body>
-
 </html>
