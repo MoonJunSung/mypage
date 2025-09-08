@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영단어 맟추기</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        .start-button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .start-button:hover {
+            background-color: #0056b3;
+        }
+        .end-button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .end-button:hover {
+            background-color: #a71d2a;
+        }
+        .image-frame {
+            width: 220px;
+            height: 220px;
+            border: 3px solid #007bff;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            margin-top: 30px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .game-image {
+            max-width: 180px;
+            max-height: 180px;
+            border-radius: 10px;
+        }
+        .last-score {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            min-width: 200px;
+            text-align: center;
+        }
+        .last-score.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="image-frame">
+            <img src="logo.png" alt="게임 로고" class="game-image">
+        </div>  
+        <div class="title">영단어 맟추기</div>
+        <div class="last-score hidden" id="lastScore">마지막 점수: 0</div>
+        <button class="start-button" onclick="startGame()" alt="게임 시작">게임 시작</button>
+        <button class="end-button" onclick="confirmExit()" alt="게임 종료">게임 종료</button>
+    </div>
+    <script>
+        // 페이지 로드 시 마지막 점수 표시
+        window.onload = function() {
+            const lastScore = localStorage.getItem('finalScore');
+            const lastScoreElement = document.getElementById('lastScore');
+            
+            if (lastScore && lastScore !== '0') {
+                lastScoreElement.textContent = `마지막 점수: ${lastScore}`;
+                lastScoreElement.classList.remove('hidden');
+            } else {
+                lastScoreElement.classList.add('hidden');
+            }
+        };
+
+        function startGame() {
+            window.location.href = "selectmenu.html"; // 이동할 페이지 경로
+        }
+        function confirmExit() {
+            const userConfirmed = confirm("종료 하시겠습니까?");
+            if (userConfirmed) {
+                alert("게임이 종료되었습니다.");
+                window.close();
+            }
+        }
+    </script>
+</body>
+</html>

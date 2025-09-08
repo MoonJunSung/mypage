@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>영단어 맟추기</title>
+  <style>
+    :root {
+      --brick-width: 140px;
+      --brick-height: 50px;
+      --cannon-width: 140px;
+      --cannon-height: 50px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    html, body {
+      margin: 0;
+      height: 100%;
+      overscroll-behavior: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .key-viewer {
+      position: fixed;
+      left: 50%;
+      bottom: calc(var(--safe-bottom) + 40px);
+      transform: translateX(-50%);
+      background: #fff;
+      border: 2px solid #007bff;
+      border-radius: 10px;
+      padding: 20px 40px;
+      font-size: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      min-width: 120px;
+      text-align: center;
+      color: #007bff;
+      user-select: none;
+    }
+    .game-area {
+      position: relative;
+      width: min(1200px, 100vw);
+      height: min(900px, 100dvh);
+      margin: 0 auto;
+      background: #eaf6ff;
+      border-radius: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      overflow: hidden;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .bricks {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .brick {
+      position: absolute;
+      width: var(--brick-width);
+      height: var(--brick-height);
+      background: #fff;
+      border: 2px solid #007bff;
+      border-radius: 8px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.1;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #007bff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
+      overflow: hidden;
+      padding: 0 6px;
+      will-change: transform;
+      transform: translateY(var(--ty, 0px));
+    }
+    .cannon {
+      position: absolute;
+      bottom: 60px;
+      width: var(--cannon-width);
+      height: var(--cannon-height);
+      background: #007bff;
+      border-radius: 8px;
+      left: 380px;
+      will-change: left;
+    }
+    #wordInput {
+      position: absolute;
+      left: 50%;
+      bottom: calc(var(--safe-bottom) + 12px);
+      transform: translateX(-50%);
+      padding: 12px;
+      font-size: 1.2rem;
+      border-radius: 8px;
+      border: 2px solid #007bff;
+      width: min(70vw, 360px);
+      text-align: center;
+    }
+    .exit-button {
+      position: fixed;
+      left: 30px;
+      bottom: calc(var(--safe-bottom) + 30px);
+      padding: 20px 48px;
+      font-size: 2rem;
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      z-index: 100;
+    }
+    .exit-button:hover {
+      background-color: #a71d2a;
+    }
+    .ball {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #ff9800;
+      border-radius: 50%;
+      left: 0;
+      top: 0;
+      display: none;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .lives {
+      position: absolute;
+      top: 10px;
+      left: 30px;
+      font-size: 1.2rem;
+      color: #dc3545;
+      font-weight: bold;
+      z-index: 20;
+    }
+    .score { 
+     position: absolute;
+      top: 10px;      /* 위쪽에서 10px */
+      right: 30px;    /* 오른쪽에서 30px */
+      font-size: 1.2rem;
+      color: #16a703d3;
+      font-weight: bold;
+      z-index: 20;
+    } 
+    /* 벽돌 깨짐 파편 */
+    .shard {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: #fff;
+      border: 1px solid #007bff;
+      border-radius: 2px;
+      pointer-events: none;
+      z-index: 30;
+      opacity: 1;
+      transform: translate(0, 0) scale(1);
+      transition: transform 400ms ease-out, opacity 400ms ease-out;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    }
+    /* 공 깨짐 파편 */
+    .ball-shard {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: #ff9800;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 30;
+      opacity: 1;
+      transform: translate(0, 0) scale(1);
+      transition: transform 350ms ease-out, opacity 350ms ease-out;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    }
+    .brick.breaking {
+      transform: translateY(var(--ty, 0px)) scale(1.08) rotate(var(--rot, 0deg));
+      opacity: 0;
+      transition: transform 260ms ease-out, opacity 240ms ease-out;
+    }
+    .impact-flash {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      pointer-events: none;
+      background: radial-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0));
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 0.9;
+      transition: transform 220ms ease-out, opacity 220ms ease-out;
+      z-index: 25;
+    }
+    /* 오른쪽 하단 캐릭터 틀 */
+    .character-frame {
+      position: fixed;
+      right: 20px;
+      bottom: calc(var(--safe-bottom) + 20px);
+      width: 140px;
+      height: 140px;
+      border: 3px solid #007bff;
+      border-radius: 16px;
+      background: #ffffff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      z-index: 40;
+    }
+    .character-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #7aa7ff;
+      font-size: 1rem;
+      user-select: none;
+      background-image: linear-gradient(45deg, rgba(0,0,0,0.02) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.02) 75%),
+                        linear-gradient(45deg, rgba(0,0,0,0.02) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.02) 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 8px 8px;
+    }
+    
+    /* 단어 뜻 표시 UI */
+    .meaning-display {
+      position: absolute;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 15px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      z-index: 50;
+      opacity: 0;
+      transform: translateY(20px) scale(0.8);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: none;
+      text-align: center;
+      min-width: 120px;
+      border: 2px solid rgba(255,255,255,0.3);
+    }
+    
+    .meaning-display.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    
+    .meaning-display .word {
+      font-size: 1.1rem;
+      margin-bottom: 5px;
+      opacity: 0.9;
+    }
+    
+    .meaning-display .meaning {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    
+    /* 화면 흔들림 효과 */
+    .game-area.shake {
+      animation: screenShake 0.5s ease-in-out;
+    }
+    
+    @keyframes screenShake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+      20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+
+    /* 모바일 최적화 */
+    @media (max-width: 768px) {
+      :root {
+        --brick-width: 100px;
+        --brick-height: 40px;
+        --cannon-width: 100px;
+        --cannon-height: 40px;
+      }
+      .lives, .score {
+        font-size: 1rem;
+      }
+      .exit-button {
+        left: 16px;
+        padding: 12px 24px;
+        font-size: 1.1rem;
+      }
+      .character-frame {
+        right: 12px;
+        width: 96px;
+        height: 96px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-area">
+    <div class="bricks" id="bricks">
+      <!-- 벽돌이 여러 겹으로 생성됩니다 -->
+    </div>
+    <div class="cannon" id="cannon"></div>
+    <div class="ball" id="ball"></div>
+    <input type="text" id="wordInput" placeholder="영단어를 입력하세요" autocomplete="off">
+  </div>
+  <button class="exit-button" onclick="GameOver()">종료</button>
+  <div class="character-frame">
+    <div class="character-placeholder">캐릭터 영역</div>
+  </div>
+  <script>
+    // 모바일 가상키보드 시 시각영역 보정
+    function fixViewportHeight() {
+      document.documentElement.style.setProperty('--vh', window.innerHeight * 0.01 + 'px');
+    }
+    window.addEventListener('resize', fixViewportHeight);
+    fixViewportHeight();
+    // 사운드: 공 발사/벽돌 파괴 효과음 (Web Audio)
+    let audioCtx = null;
+    let masterGain = null;
+    function initAudio() {
+      if (audioCtx) return;
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioCtx();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = 0.5;
+      masterGain.connect(audioCtx.destination);
+
+      if (audioCtx.state === 'suspended') {
+        const resume = () => {
+          audioCtx.resume();
+        };
+        document.addEventListener('click', resume, { once: true });
+        document.addEventListener('touchstart', resume, { once: true });
+        document.addEventListener('keydown', resume, { once: true });
+      }
+    }
+
+    function playShootSound() {
+      initAudio();
+      if (!audioCtx) return;
+      const now = audioCtx.currentTime;
+
+      const osc = audioCtx.createOscillator();
+      osc.type = 'triangle';
+      const gain = audioCtx.createGain();
+      gain.gain.value = 0;
+      osc.connect(gain);
+      gain.connect(masterGain);
+
+      osc.frequency.setValueAtTime(900, now);
+      osc.frequency.exponentialRampToValueAtTime(300, now + 0.12);
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.6, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+
+      osc.start(now);
+      osc.stop(now + 0.22);
+    }
+
+    function playBrickBreakSound() {
+      initAudio();
+      if (!audioCtx) return;
+      const now = audioCtx.currentTime;
+
+      // 화이트 노이즈 버스트
+      const duration = 0.18;
+      const length = Math.floor(duration * audioCtx.sampleRate);
+      const buffer = audioCtx.createBuffer(1, length, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < length; i++) {
+        const t = i / length;
+        data[i] = (Math.random() * 2 - 1) * (1 - t);
+      }
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = buffer;
+
+      const band = audioCtx.createBiquadFilter();
+      band.type = 'bandpass';
+      band.frequency.value = 1200;
+      band.Q.value = 0.8;
+
+      const nGain = audioCtx.createGain();
+      nGain.gain.value = 0.7;
+      noise.connect(band);
+      band.connect(nGain);
+      nGain.connect(masterGain);
+      nGain.gain.setValueAtTime(0.7, now);
+      nGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      noise.start(now);
+      noise.stop(now + duration + 0.02);
+
+      // 짧은 블립 추가
+      const blip = audioCtx.createOscillator();
+      blip.type = 'sine';
+      blip.frequency.setValueAtTime(600, now);
+      blip.frequency.exponentialRampToValueAtTime(200, now + 0.12);
+      const bGain = audioCtx.createGain();
+      bGain.gain.value = 0.4;
+      blip.connect(bGain);
+      bGain.connect(masterGain);
+      bGain.gain.setValueAtTime(0.4, now);
+      bGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+      blip.start(now);
+      blip.stop(now + 0.18);
+    }
+    // 영어 단어 목록 (20개)
+    const words = [
+      "achieve", "appealing", "at least", "be willing to", "blood pressure",
+      "butcher", "cause", "come up", "consist of", "consume",
+      "contain", "definitely", "dine", "due to", "emphasis on",
+      "equivalent", "factor", "ferment", "gain weight", "grain"
+    ];
+
+    // 단어와 뜻 매핑
+    const wordMeanings = {
+      "achieve": "성취하다",
+      "appealing": "매력적인",
+      "at least": "최소한",
+      "be willing to": "기꺼이 ~하다",
+      "blood pressure": "혈압",
+      "butcher": "정육점 주인",
+      "cause": "~을 야기하다",
+      "come up": "다가오다",
+      "consist of": "~로 이루어지다, 구성되다",
+      "consume": "먹다, 소모하다",
+      "contain": "포함하다",
+      "definitely": "분명히, 틀림없이",
+      "dine": "식사를 하다",
+      "due to": "~ 때문에",
+      "emphasis on": "~에 대한 강조",
+      "equivalent": "동등한, 상당하는",
+      "factor": "요인",
+      "ferment": "발효되다",
+      "gain weight": "체중이 늘다",
+      "grain": "곡물(곡식의 낱알)"
+    };
+
+    // 떨어지는 벽돌 스폰 및 관리
+    const activeBricks = new Set();
+    let lastSpawnTime = 0;   // 마지막 블록 스폰 시간
+    const spawnDelay = 500; // 최소 0.5초 간격
+    function spawnFallingBrick() {
+          const now = performance.now();
+          if (now - lastSpawnTime < spawnDelay) {
+          // 아직 대기시간 안 지났으면 스폰 안함
+          return;
+        }
+      lastSpawnTime = now;
+
+      const bricksWrap = document.getElementById('bricks');
+      const gameArea = document.querySelector('.game-area');
+      const gameWidth = gameArea.clientWidth;
+      const brickWidthCss = getComputedStyle(document.documentElement).getPropertyValue('--brick-width').trim();
+      const brickWidth = parseFloat(brickWidthCss) || 140;
+
+      // x좌표 랜덤
+      const spawnX = Math.random() * Math.max(0, gameWidth - brickWidth);
+
+      const brick = document.createElement('div');
+     brick.className = 'brick';
+     brick.textContent = words[Math.floor(Math.random() * words.length)];
+     brick.style.left = spawnX + 'px';
+     brick.style.top = '0px';
+     brick.style.setProperty('--ty', '-60px');
+     bricksWrap.appendChild(brick);
+
+      const lifetimeMs = fallingLifetimeMs; // 난이도별 낙하 시간
+      const startTime = performance.now();
+      const startY = -60;
+      const endY = gameArea.clientHeight;
+
+      const state = { el: brick, startTime, startY, endY, lifetimeMs, stopped: false, removed: false }; 
+      activeBricks.add(state);
+      
+      // 디버깅용 로그
+      console.log('벽돌 스폰됨:', brick.textContent, '총 벽돌 수:', activeBricks.size);
+  }
+
+    function removeBrickState(state) {
+      if (state.removed) return;
+      state.removed = true;
+      activeBricks.delete(state);
+      if (state.el && state.el.parentNode) state.el.parentNode.removeChild(state.el);
+    }
+
+    function updateFallingBricks(now) {
+      activeBricks.forEach(state => {
+        if (state.removed) return;
+        if (state.stopped) return;
+        const t = (now - state.startTime) / state.lifetimeMs; // 0 -> 1 (9초)
+        if (t >= 1) {
+          removeBrickState(state);
+
+          lives--;
+          updateLives();
+          return;
+        }
+        const y = state.startY + (state.endY - state.startY) * t;
+        state.el.style.setProperty('--ty', y + 'px');
+      });
+    }
+
+    // 대포 이동 
+    let cannonX = 380; 
+    const cannon = document.getElementById('cannon');
+    function renderCannon() {
+      cannon.style.left = cannonX + 'px';
+    }
+    const gameEl = document.querySelector('.game-area');
+    document.querySelector('.game-area').addEventListener('mousemove', function(e) {
+        const gameEl = document.querySelector('.game-area');
+        const rect = gameEl.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        cannonX = mouseX - cannon.offsetWidth / 2;
+          const maxX = getMaxCannonX();
+          if (cannonX < 0) cannonX = 0;
+          if (cannonX > maxX) cannonX = maxX;
+          renderCannon();
+      });
+
+    function handleTouchMove(e) {
+      if (!e.touches || e.touches.length === 0) return;
+      const rect = gameEl.getBoundingClientRect();
+      const touch = e.touches[0];
+      const touchX = touch.clientX - rect.left;
+      cannonX = touchX - cannon.offsetWidth / 2;
+      const maxX = getMaxCannonX();
+      if (cannonX < 0) cannonX = 0;
+      if (cannonX > maxX) cannonX = maxX;
+      renderCannon();
+      e.preventDefault();
+    }
+    gameEl.addEventListener('touchstart', handleTouchMove, { passive: false });
+    gameEl.addEventListener('touchmove', handleTouchMove, { passive: false });
+    function getMaxCannonX() {
+      const gameEl = document.querySelector('.game-area');
+      return Math.max(0, gameEl.clientWidth - cannon.offsetWidth);
+    }
+    let isLeftPressed = false;
+    let isRightPressed = false;
+    let cannonVelocityX = 0;
+    const maxSpeed = 900; // px/sec
+    const accel = 5000; // px/sec^2
+    const decel = 6000; // px/sec^2
+
+    function updateCannon(dt) {
+      let desired = 0;
+      if (isLeftPressed) desired -= 1;
+      if (isRightPressed) desired += 1;
+
+      if (desired === 0) {
+        // 감속
+        const sign = Math.sign(cannonVelocityX);
+        const speed = Math.abs(cannonVelocityX);
+        const newSpeed = Math.max(0, speed - decel * dt);
+        cannonVelocityX = newSpeed * sign;
+      } else {
+        // 가속
+        cannonVelocityX += desired * accel * dt;
+        // 최대 속도 제한
+        if (cannonVelocityX > maxSpeed) cannonVelocityX = maxSpeed;
+        if (cannonVelocityX < -maxSpeed) cannonVelocityX = -maxSpeed;
+      }
+
+      // 위치 업데이트 및 경계 처리
+      cannonX += cannonVelocityX * dt;
+      if (cannonX < 0) {
+        cannonX = 0;
+        if (cannonVelocityX < 0) cannonVelocityX = 0;
+      }
+      const maxX = getMaxCannonX();
+      if (cannonX > maxX) {
+        cannonX = maxX;
+        if (cannonVelocityX > 0) cannonVelocityX = 0;
+      }
+
+      renderCannon();
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowLeft') isLeftPressed = true;
+      if (e.key === 'ArrowRight') isRightPressed = true;
+    });
+    document.addEventListener('keyup', function(e) {
+      if (e.key === 'ArrowLeft') isLeftPressed = false;
+      if (e.key === 'ArrowRight') isRightPressed = false;
+    });
+
+    let lives = 3;
+    const livesDisplay = document.createElement('div');
+    livesDisplay.className = 'lives';
+    livesDisplay.textContent = '목숨: ' + lives;
+    document.querySelector('.game-area').appendChild(livesDisplay);
+
+    function updateLives() {
+      livesDisplay.textContent = '목숨: ' + lives;
+      if (lives <= 0) {
+        GameOver()
+        //alert('게임 오버!');
+        //window.location.reload();
+      } else {
+        // 목숨이 깎였을 때 화면 흔들림 효과
+        shakeScreen();
+      }
+    }
+
+    let score = 0;
+    const scoreDisplay = document.createElement('div');
+    scoreDisplay.className = 'score';
+    scoreDisplay.textContent = '점수: ' + score;
+    document.querySelector('.game-area').appendChild(scoreDisplay);
+
+    function updateScore(points) {
+      score += points;
+      scoreDisplay.textContent = '점수: ' + score;
+    }
+
+    function GameOver() {
+
+            localStorage.setItem('finalScore', score);
+            
+            window.location.href = "gameover.html"; // 이동할 페이지 경로
+        }
+
+    // 벽돌 깨짐 효과 생성
+    function createBreakEffect(targetBrick) {
+      // 사운드: 벽돌 파괴
+      try { playBrickBreakSound(); } catch (e) {}
+      const gameArea = document.querySelector('.game-area');
+      const gameAreaRect = gameArea.getBoundingClientRect();
+      const rect = targetBrick.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2 - gameAreaRect.left;
+      const centerY = rect.top + rect.height / 2 - gameAreaRect.top;
+
+      // 단어 뜻 표시
+      const word = targetBrick.textContent.trim();
+      if (word) {
+        showWordMeaning(word, centerX, centerY);
+      }
+
+      // 임팩트 플래시
+      const flash = document.createElement('div');
+      flash.className = 'impact-flash';
+      flash.style.left = centerX + 'px';
+      flash.style.top = centerY + 'px';
+      gameArea.appendChild(flash);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          flash.style.transform = 'translate(-50%, -50%) scale(2.4)';
+          flash.style.opacity = '0';
+        });
+      });
+      setTimeout(() => { if (flash.parentNode) flash.parentNode.removeChild(flash); }, 240);
+
+      // 벽돌 살짝 튕기며 사라지는 효과
+      const randomRot = (Math.random() * 12 - 6).toFixed(2) + 'deg';
+      targetBrick.style.setProperty('--rot', randomRot);
+      targetBrick.classList.add('breaking');
+
+      const shardCount = 18;
+      for (let i = 0; i < shardCount; i++) {
+        const shard = document.createElement('div');
+        shard.className = 'shard';
+        shard.style.left = (centerX - 3) + 'px';
+        shard.style.top = (centerY - 3) + 'px';
+        gameArea.appendChild(shard);
+
+        const angle = Math.random() * Math.PI * 2;
+        // 위쪽으로 조금 더 많이 튀게 편향
+        const biasY = -0.4 + Math.random() * 0.8; // -0.4 ~ 0.4
+        const speed = 90 + Math.random() * 160; // 90 ~ 250 px
+        const dx = Math.cos(angle) * speed * 0.9;
+        const dy = Math.sin(angle) * speed * (0.8 + biasY);
+        const scale = 0.6 + Math.random() * 0.6; // 0.6 ~ 1.2
+
+        // 다음 프레임에 이동 시작하여 트랜지션 작동
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            shard.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+            shard.style.opacity = '0';
+          });
+        });
+
+        // 종료 후 DOM 제거
+        setTimeout(() => {
+          if (shard && shard.parentNode) shard.parentNode.removeChild(shard);
+        }, 500);
+      }
+    }
+
+    // 공 깨짐 효과 (현재 공 위치 기준)
+    function createBallBreakEffectAt(centerX, centerY) {
+      const gameArea = document.querySelector('.game-area');
+      const shardCount = 10;
+      for (let i = 0; i < shardCount; i++) {
+        const shard = document.createElement('div');
+        shard.className = 'ball-shard';
+        shard.style.left = (centerX - 2.5) + 'px';
+        shard.style.top = (centerY - 2.5) + 'px';
+        gameArea.appendChild(shard);
+
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 50 + Math.random() * 90; // 50 ~ 140px
+        const dx = Math.cos(angle) * speed;
+        const dy = Math.sin(angle) * speed;
+        const scale = 0.7 + Math.random() * 0.6; // 0.7 ~ 1.3
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            shard.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+            shard.style.opacity = '0';
+          });
+        });
+
+        setTimeout(() => {
+          if (shard && shard.parentNode) shard.parentNode.removeChild(shard);
+        }, 450);
+      }
+    }
+
+    // 단어 뜻 표시 함수
+    function showWordMeaning(word, x, y) {
+      const meaning = wordMeanings[word.toLowerCase()];
+      if (!meaning) return;
+
+      const gameArea = document.querySelector('.game-area');
+      const meaningDisplay = document.createElement('div');
+      meaningDisplay.className = 'meaning-display';
+      meaningDisplay.innerHTML = `
+        <div class="word">${word}</div>
+        <div class="meaning">${meaning}</div>
+      `;
+      
+      // 위치 설정 (블록이 깨진 위치 근처에 표시)
+      meaningDisplay.style.left = (x - 60) + 'px';
+      meaningDisplay.style.top = (y - 80) + 'px';
+      
+      gameArea.appendChild(meaningDisplay);
+      
+      // 애니메이션 시작
+      requestAnimationFrame(() => {
+        meaningDisplay.classList.add('show');
+      });
+      
+      // 0.5초 후 사라지기
+      setTimeout(() => {
+        meaningDisplay.classList.remove('show');
+        setTimeout(() => {
+          if (meaningDisplay.parentNode) {
+            meaningDisplay.parentNode.removeChild(meaningDisplay);
+          }
+        }, 400);
+      }, 500);
+    }
+
+    // 화면 흔들림 효과 함수
+    function shakeScreen() {
+      const gameArea = document.querySelector('.game-area');
+      gameArea.classList.add('shake');
+      
+      // 애니메이션 완료 후 클래스 제거
+      setTimeout(() => {
+        gameArea.classList.remove('shake');
+      }, 500);
+    }
+
+    // 공 애니메이션
+    function shootBall(targetBrick, hit) {
+      const ball = document.getElementById('ball');
+      const cannonRect = cannon.getBoundingClientRect();
+      const gameAreaRect = document.querySelector('.game-area').getBoundingClientRect();
+      const cannonCenterX = cannonRect.left + cannonRect.width / 2 - gameAreaRect.left;
+      const cannonCenterY = cannonRect.top + cannonRect.height / 2 - gameAreaRect.top;
+
+      let ballX = cannonCenterX - 10;
+      let ballY = cannonCenterY - 10;
+      ball.style.left = ballX + 'px';
+      ball.style.top = ballY + 'px';
+      ball.style.display = 'block';
+      // 사운드: 공 발사
+      try { playShootSound(); } catch (e) {}
+
+  // 목표 Y (일단 화면 위 끝까지)
+      let targetY = -20;
+
+      let collidedBrick = null;
+
+  // 공이 이동하는 동안 실제 충돌 검사
+      let frame = 0;
+      const frames = 60; // 부드럽게 (조절 가능)
+      const dx = 0;
+      const dy = (targetY - ballY) / frames;
+
+    function animate() {
+      if (frame < frames) {
+      ballX += dx;
+      ballY += dy;
+      ball.style.left = ballX + 'px';
+      ball.style.top = ballY + 'px';
+
+      // 충돌 검사
+        const ballRect = ball.getBoundingClientRect();
+        const bricks = document.querySelectorAll('.brick');
+        bricks.forEach(b => {
+          if ((b.textContent || '').trim() === '') return;
+          const r = b.getBoundingClientRect();
+          if (
+            ballRect.left < r.right &&
+            ballRect.right > r.left &&
+            ballRect.top < r.bottom &&
+            ballRect.bottom > r.top
+        ) {
+          // 실제 충돌
+          collidedBrick = b;
+        }
+      });
+
+      if (collidedBrick) {
+        ball.style.display = 'none';
+
+        if (hit && collidedBrick === targetBrick) {
+          // 정답 맞고 실제 충돌 
+          createBreakEffect(collidedBrick);
+          setTimeout(() => {
+            collidedBrick.textContent = '';
+            collidedBrick.style.background = 'transparent';
+            collidedBrick.style.border = 'none';
+            collidedBrick.style.boxShadow = 'none';
+          }, 220);
+          activeBricks.forEach(state => {
+            if (state.el === collidedBrick) removeBrickState(state);
+            updateScore(1);
+          });
+        } else {
+          // 오답이거나 다른 벽돌 충돌 
+          const ballCenterX2 = ballX + 10;
+          const ballCenterY2 = ballY + 10;
+          createBallBreakEffectAt(ballCenterX2, ballCenterY2);
+          // lives--;
+          // updateLives();
+        }
+        return; // 애니메이션 종료
+      }
+
+      frame++;
+      requestAnimationFrame(animate);
+    } else {
+      ball.style.display = 'none';
+    }
+  }
+  animate();
+}
+
+    // 엔터 입력 처리: 어떤 단어든 발사. 입력이 벽돌 텍스트와 일치하면 해당 벽돌을 파괴
+    document.getElementById('wordInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        const value = e.target.value.trim().toLowerCase();
+        const bricks = document.querySelectorAll('.brick');
+        let matchedBrick = null;
+        bricks.forEach(b => {
+          const text = (b.textContent || '').trim().toLowerCase();
+          if (!matchedBrick && text && text === value) matchedBrick = b;
+        });
+        if (matchedBrick) {
+          // 정답: 해당 벽돌을 파괴 대상으로 지정
+          shootBall(matchedBrick, true);
+        } else {
+          // 오답: 발사하되 미스로 처리 (경로상의 벽돌과 부딪히면 공만 깨짐, 목숨 감소)
+          shootBall(null, false);
+        }
+        e.target.value = '';
+      }
+      
+    });
+
+    const brickSpawnIntervalMsEasy = 3500;   // 쉬움
+    const brickSpawnIntervalMsNormal = 2800; // 보통
+    const brickSpawnIntervalMsHard = 1800;   // 어려움
+
+    // 난이도별 낙하 시간(길수록 느리게 떨어짐)
+    const fallingLifetimeMsEasy = 22000;   // 쉬움(느림)
+    const fallingLifetimeMsNormal = 17000; // 보통
+    const fallingLifetimeMsHard = 12000;   // 어려움(빠름)
+    let fallingLifetimeMs = fallingLifetimeMsNormal;
+
+    // localStorage에서 난이도 가져오기
+      let difficulty = localStorage.getItem('difficulty') || 'normal'; // 기본 normal
+
+    // 난이도에 따라 스폰 간격 설정
+    let brickSpawnIntervalMs;
+    switch(difficulty) {
+      case 'easy':
+          brickSpawnIntervalMs = brickSpawnIntervalMsEasy;
+          break;
+      case 'normal':
+          brickSpawnIntervalMs = brickSpawnIntervalMsNormal;
+          break;
+      case 'hard':
+          brickSpawnIntervalMs = brickSpawnIntervalMsHard;
+          break;
+    }
+
+    // 난이도에 따라 낙하 시간 설정
+    switch(difficulty) {
+      case 'easy':
+          fallingLifetimeMs = fallingLifetimeMsEasy;
+          break;
+      case 'normal':
+          fallingLifetimeMs = fallingLifetimeMsNormal;
+          break;
+      case 'hard':
+          fallingLifetimeMs = fallingLifetimeMsHard;
+          break;
+    }
+
+    // 스폰 타이머 초기화
+    let brickSpawnTimer = 0;
+    let lastNow = 0;
+
+    function gameLoop(now) {
+        if (!lastNow) lastNow = now;
+       const dt = Math.min(0.033, (now - lastNow) / 1000);
+        lastNow = now;
+
+        updateCannon(dt);
+        updateFallingBricks(now);
+
+      if (!brickSpawnTimer) brickSpawnTimer = now;
+
+      if (now - brickSpawnTimer >= brickSpawnIntervalMs) {
+          spawnFallingBrick();
+          brickSpawnTimer = now;
+      }
+
+      requestAnimationFrame(gameLoop);
+  }
+
+    window.onload = function() {
+      console.log('게임 시작! 난이도:', difficulty, '스폰 간격:', brickSpawnIntervalMs + 'ms');
+      
+      // 첫 웨이브 몇 개 미리 스폰 (줄임)
+      for (let i = 0; i < 2; i++) spawnFallingBrick();
+      // 게임 영역 기준 중앙에 대포 배치
+      const gameEl = document.querySelector('.game-area');
+      cannonX = (gameEl.clientWidth - cannon.offsetWidth) / 2;
+      // 경계 보정
+      if (cannonX < 0) cannonX = 0;
+      const maxX = getMaxCannonX();
+      if (cannonX > maxX) cannonX = maxX;
+      renderCannon();
+      // 모바일에서 입력창 자동 포커스 방지 및 뷰 높이 보정
+      const input = document.getElementById('wordInput');
+      input.setAttribute('inputmode', 'text');
+      input.setAttribute('enterkeyhint', 'go');
+      input.setAttribute('autocapitalize', 'none');
+      input.setAttribute('autocomplete', 'off');
+      input.setAttribute('autocorrect', 'off');
+      
+      // 게임 루프 시작
+      requestAnimationFrame(gameLoop);
+    };
+  </script>
+</body>
+</html>

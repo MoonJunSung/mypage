@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게임 오버</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        .difficulty-board {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        .score-board {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .start-button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .start-button:hover {
+            background-color: #0056b3;
+        }
+        .end-button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .end-button:hover {
+            background-color: #a71d2a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="image-frame">
+            <!-- 이미지 넣고 싶으면 여기에 -->
+        </div>
+        <div class="title">게임 오버</div>
+
+        <!-- 선택한 난이도 표시 -->
+        <div class="difficulty-board" id="difficultyBoard">난이도: NORMAL</div>
+
+        <!-- 최종 점수 표시 -->
+        <div class="score-board" id="finalScore">최종 점수: 0</div>
+
+        <button class="start-button" onclick="startGame()" alt="다시 시작">다시 시작</button>
+        <button class="end-button" onclick="Backmenu()" alt="타이틀 화면">타이틀 화면</button>
+    </div>
+    <script>
+        // 점수와 난이도 불러오기
+        const finalScore = localStorage.getItem('finalScore') || 0;
+        const difficulty = localStorage.getItem('difficulty') || 'normal';
+
+        document.getElementById('finalScore').textContent = `최종 점수: ${finalScore}`;
+        document.getElementById('difficultyBoard').textContent = `난이도: ${difficulty.toUpperCase()}`;
+
+        function startGame() {
+            window.location.href = "selectmenu.html";
+        }
+        function Backmenu() {
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>
