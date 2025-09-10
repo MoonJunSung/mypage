@@ -113,10 +113,18 @@
         }
         function confirmExit() {
             const userConfirmed = confirm("종료 하시겠습니까?");
-            if (userConfirmed) {
-                alert("게임이 종료되었습니다.");
-                window.open('','_self').close();
-            }
+            if (!userConfirmed) return;
+
+            alert("게임이 종료되었습니다.");
+
+            try { window.open('', '_self'); } catch (e) {}
+            window.close();
+
+            setTimeout(() => {
+                if (!document.hidden) {
+                    window.location.replace('about:blank');
+                }
+            }, 200);
         }
     </script>
 </body>
