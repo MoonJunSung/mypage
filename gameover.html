@@ -33,30 +33,54 @@
             margin-bottom: 20px;
             color: #333;
         }
-        .start-button {
-            padding: 10px 20px;
-            font-size: 1rem;
-            background-color: #007bff;
-            color: white;
+        /* 버튼 그룹 */
+        .button-group {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        
+        /* 공통 버튼 스타일 */
+        .btn {
+            padding: 12px 26px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #ffffff;
             border: none;
-            border-radius: 5px;
+            border-radius: 12px;
             cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            outline: none;
         }
-        .start-button:hover {
-            background-color: #0056b3;
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
         }
-        .end-button {
-            margin-top: 10px;
-            padding: 10px 20px;
-            font-size: 1rem;
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
-        .end-button:hover {
-            background-color: #a71d2a;
+        .btn:focus-visible {
+            outline: 3px solid rgba(102, 126, 234, 0.6);
+            outline-offset: 2px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fe0 0%, #6b43a0 100%);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #d8345f 100%);
+        }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #ff5a5a 0%, #c42d55 100%);
         }
         .image-frame {
             width: min(70vw, 480px);
@@ -64,12 +88,24 @@
             justify-content: center;
             align-items: center;
             margin-bottom: 20px;
+            position: relative;
         }
         .game-over-image {
             width: 100%;
             height: auto;
             max-height: 40vh;
             object-fit: contain;
+        }
+        .score-overlay {
+            position: absolute;
+            top: 79.5%;
+            left: 60%;
+            transform: translate(-50%, -50%);
+            color: black;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 1.7rem;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -78,24 +114,26 @@
         <div class="image-frame">
             <!-- 이미지 넣고 싶으면 여기에 -->
             <img src="img/GameOver.png" alt="게임 오버" class="game-over-image">
+            <!-- 이미지 위에 점수 표시 -->
+            <div class="score-overlay" id="scoreOverlay">0점</div>
         </div>
     
 
         <!-- 선택한 난이도 표시 -->
         <div class="difficulty-board" id="difficultyBoard">난이도: NORMAL</div>
 
-        <!-- 최종 점수 표시 -->
-        <div class="score-board" id="finalScore">최종 점수: 0</div>
-
-        <button class="start-button" onclick="startGame()" alt="다시 시작">다시 시작</button>
-        <button class="end-button" onclick="Backmenu()" alt="타이틀 화면">타이틀 화면</button>
+        <div class="button-group">
+            <button class="btn btn-primary" id="restartBtn" onclick="startGame()" alt="다시 시작">다시 시작</button>
+            <button class="btn btn-danger" id="titleBtn" onclick="Backmenu()" alt="타이틀 화면">타이틀 화면</button>
+        </div>
     </div>
     <script>
         // 점수와 난이도 불러오기
         const finalScore = localStorage.getItem('finalScore') || 0;
         const difficulty = localStorage.getItem('difficulty') || 'normal';
 
-        document.getElementById('finalScore').textContent = `최종 점수: ${finalScore}`;
+        // 이미지 위에 점수 표시
+        document.getElementById('scoreOverlay').textContent = `${finalScore}점`;
         document.getElementById('difficultyBoard').textContent = `난이도: ${difficulty.toUpperCase()}`;
 
         function startGame() {
@@ -104,6 +142,16 @@
         function Backmenu() {
             window.location.href = "index.html";
         }
+        
+        // 키보드 단축키: Enter = 다시 시작, Esc = 타이틀 화면
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                startGame();
+            }
+            if (e.key === 'Escape') {
+                Backmenu();
+            }
+        });
     </script>
 </body>
 </html>

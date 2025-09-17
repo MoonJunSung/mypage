@@ -28,19 +28,60 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       cursor: pointer;
       user-select: none;
-      transition: 0.2s;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       top: 50%;
-      transform: translateY(-50%);
+      overflow: hidden;
+  }
+
+  .difficulty-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      transition: left 0.5s;
   }
 
   .difficulty-button:hover {
-      background-color: rgba(0, 123, 255, 0.1);
+      transform: translateY(-50%) scale(1.05);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      border-width: 3px;
+  }
+
+  .difficulty-button:hover::before {
+      left: 100%;
+  }
+
+  .easy:active {
+      transform: translateY(-50%) scale(0.98);
+      transition: all 0.1s;
+  }
+
+  .normal:active {
+      transform: translate(-50%, -50%) scale(0.98);
+      transition: all 0.1s;
+  }
+
+  .hard:active {
+      transform: translateY(-50%) scale(0.98);
+      transition: all 0.1s;
   }
 
   .easy {
       left: 20%;
+      transform: translateY(-50%);
       border-color: #16a703d3;
       color: #16a703d3;
+  }
+
+  .easy:hover {
+      background: linear-gradient(135deg, rgba(22, 167, 3, 0.1), rgba(22, 167, 3, 0.05));
+      border-color: #16a703;
+      color: #16a703;
+      box-shadow: 0 8px 25px rgba(22, 167, 3, 0.3);
+      transform: translateY(-50%) scale(1.05);
   }
 
   .normal {
@@ -50,13 +91,29 @@
       color: rgb(0, 0, 255);
   }
 
+  .normal:hover {
+      background: linear-gradient(135deg, rgba(0, 0, 255, 0.1), rgba(0, 0, 255, 0.05));
+      border-color: #0000ff;
+      color: #0000ff;
+      box-shadow: 0 8px 25px rgba(0, 0, 255, 0.3);
+      transform: translate(-50%, -50%) scale(1.05);
+  }
+
   .hard {
       right: 20%;
+      transform: translateY(-50%);
       border-color: red;
       color: red;
   }
 
-  /* 뒤로 가기 버튼 스타일 */
+  .hard:hover {
+      background: linear-gradient(135deg, rgba(255, 0, 0, 0.1), rgba(255, 0, 0, 0.05));
+      border-color: #ff0000;
+      color: #ff0000;
+      box-shadow: 0 8px 25px rgba(255, 0, 0, 0.3);
+      transform: translateY(-50%) scale(1.05);
+  }
+
   .end-button {
       position: absolute;
       top: 85%;
@@ -75,6 +132,110 @@
 
   .end-button:hover {
       background-color: #5a6268;
+      transform: translate(-50%, -50%) scale(1.05);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  }
+
+  .end-button:active {
+      transform: translate(-50%, -50%) scale(0.98);
+      transition: all 0.1s;
+  }
+
+  /* 모달 스타일 */
+  .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease-out;
+  }
+
+  .modal-box {
+      background: white;
+      border-radius: 15px;
+      padding: 30px 40px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      animation: slideIn 0.3s ease-out;
+      border: 2px solid #007bff;
+  }
+
+  .modal-title {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #007bff;
+      margin-bottom: 15px;
+  }
+
+  .modal-message {
+      font-size: 1.2rem;
+      color: #333;
+      margin-bottom: 25px;
+      line-height: 1.4;
+  }
+
+  .modal-button {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+  }
+
+  .modal-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+      background: linear-gradient(135deg, #0056b3, #004085);
+  }
+
+  .modal-button:active {
+      transform: translateY(0);
+      transition: all 0.1s;
+  }
+
+  .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+  }
+
+  .modal-button.cancel {
+      background: #6c757d;
+      box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+  }
+
+  .modal-button.cancel:hover {
+      background: #5a6268;
+      box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+  }
+
+  @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+  }
+
+  @keyframes slideIn {
+      from { 
+          opacity: 0;
+          transform: translateY(-50px) scale(0.9);
+      }
+      to { 
+          opacity: 1;
+          transform: translateY(0) scale(1);
+      }
   }
 </style>
 </head>
@@ -86,15 +247,48 @@
 
 <button class="end-button" onclick="goBack()">뒤로 가기</button>
 
+<!-- 모달 박스 -->
+<div id="modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-title">난이도 선택 완료!</div>
+        <div class="modal-message" id="modalMessage"></div>
+        <div class="modal-actions">
+            <button class="modal-button" onclick="closeModal()">확인</button>
+            <button class="modal-button cancel" onclick="cancelModal()">취소</button>
+        </div>
+    </div>
+</div>
+
 <script>
 function selectDifficulty(level) {
     localStorage.setItem('difficulty', level.toLowerCase());
-    alert(level + ' 모드가 선택되었습니다!');
+    
+    // 모달 메시지 설정
+    const modalMessage = document.getElementById('modalMessage');
+    modalMessage.textContent = level + ' 모드가 선택되었습니다!';
+    
+    // 모달 표시
+    const modal = document.getElementById('modal');
+    modal.style.display = 'flex';
+}
+
+function closeModal() {
+    const modal = document.getElementById('modal');
+    modal.style.display = 'none';
+    
+    // 확인 버튼 클릭 시 게임 페이지로 이동
     window.location.href = 'game.html';
 }
 
 function goBack() {
     window.location.href = 'index.html';
+}
+
+function cancelModal() {
+    const modal = document.getElementById('modal');
+    modal.style.display = 'none';
+    // 선택을 취소하므로 저장했던 난이도 제거
+    localStorage.removeItem('difficulty');
 }
 </script>
 
