@@ -455,6 +455,10 @@
           // 아직 대기시간 안 지났으면 스폰 안함
           return;
         }
+      // 난이도별 동시 낙하 제한 체크
+      if (activeBricks.size >= maxActiveBricks) {
+        return;
+      }
       lastSpawnTime = now;
 
       const bricksWrap = document.getElementById('bricks');
@@ -838,8 +842,13 @@
             collidedBrick.style.boxShadow = 'none';
           }, 220);
           activeBricks.forEach(state => {
-            if (state.el === collidedBrick) removeBrickState(state);
-            updateScore(1);
+            if (state.el === collidedBrick) {
+              removeBrickState(state);
+              // 단어 길이에 따른 가산점: 기본 1점 + 길이 보너스(길이-4의 절반, 최소 0)
+              const word = (collidedBrick.textContent || '').trim();
+              const bonus = Math.max(0, Math.floor((word.length - 4) / 2));
+              updateScore(1 + bonus);
+            }
           });
         } else {
           // 오답이거나 다른 벽돌 충돌 
@@ -883,15 +892,21 @@
       
     });
 
-    const brickSpawnIntervalMsEasy = 3500;   // 쉬움
-    const brickSpawnIntervalMsNormal = 2800; // 보통
-    const brickSpawnIntervalMsHard = 1800;   // 어려움
+    const brickSpawnIntervalMsEasy = 5000;   // 쉬움(더 느리게)
+    const brickSpawnIntervalMsNormal = 3600; // 보통(더 느리게)
+    const brickSpawnIntervalMsHard = 2600;   // 어려움(조금 더 빠르게)
 
     // 난이도별 낙하 시간(길수록 느리게 떨어짐)
-    const fallingLifetimeMsEasy = 22000;   // 쉬움(느림)
-    const fallingLifetimeMsNormal = 17000; // 보통
-    const fallingLifetimeMsHard = 12000;   // 어려움(빠름)
+    const fallingLifetimeMsEasy = 30000;   // 쉬움(더 느림)
+    const fallingLifetimeMsNormal = 24000; // 보통(더 느림)
+    const fallingLifetimeMsHard = 18000;   // 어려움(조금 더 빠르게)
     let fallingLifetimeMs = fallingLifetimeMsNormal;
+
+    // 동시 낙하 벽돌 최대 수 제한(난이도별)
+    const maxActiveBricksEasy = 2;
+    const maxActiveBricksNormal = 2;
+    const maxActiveBricksHard = 3;
+    let maxActiveBricks = maxActiveBricksNormal;
 
     // localStorage에서 난이도 가져오기
       let difficulty = localStorage.getItem('difficulty') || 'normal'; // 기본 normal
@@ -923,6 +938,19 @@
           break;
     }
 
+    // 난이도에 따라 동시에 존재 가능한 벽돌 수 제한
+    switch(difficulty) {
+      case 'easy':
+        maxActiveBricks = maxActiveBricksEasy;
+        break;
+      case 'normal':
+        maxActiveBricks = maxActiveBricksNormal;
+        break;
+      case 'hard':
+        maxActiveBricks = maxActiveBricksHard;
+        break;
+    }
+
     // 스폰 타이머 초기화
     let brickSpawnTimer = 0;
     let lastNow = 0;
@@ -938,8 +966,14 @@
       if (!brickSpawnTimer) brickSpawnTimer = now;
 
       if (now - brickSpawnTimer >= brickSpawnIntervalMs) {
+          const before = activeBricks.size;
           spawnFallingBrick();
-          brickSpawnTimer = now;
+          // 실제 스폰이 이뤄졌을 때만 타이머 리셋
+          if (activeBricks.size > before) {
+            brickSpawnTimer = now;
+          } else {
+            // 제한에 걸려 스폰 실패 시, 다음 프레임에 다시 시도 (타이머 유지)
+          }
       }
 
       requestAnimationFrame(gameLoop);
@@ -948,8 +982,16 @@
     window.onload = function() {
       console.log('게임 시작! 난이도:', difficulty, '스폰 간격:', brickSpawnIntervalMs + 'ms');
       
-      // 첫 웨이브 몇 개 미리 스폰 (줄임)
-      for (let i = 0; i < 2; i++) spawnFallingBrick();
+      // 첫 웨이브: 난이도별로 미리 스폰 수 조정
+      const initialSpawn = (function() {
+        switch (difficulty) {
+          case 'easy': return 2; // EASY도 여러 개 시작
+          case 'hard': return Math.min(2, maxActiveBricks);
+          case 'normal':
+          default: return 2;
+        }
+      })();
+      for (let i = 0; i < initialSpawn; i++) spawnFallingBrick();
       // 게임 영역 기준 중앙에 대포 배치
       const gameEl = document.querySelector('.game-area');
       cannonX = (gameEl.clientWidth - cannon.offsetWidth) / 2;
