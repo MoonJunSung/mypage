@@ -247,7 +247,47 @@
         </div>
     </div>
     
+    <!-- 이스터에그: EXTREME 선택 모달 -->
+    <div id="extremeModal" class="modal">
+        <div class="modal-content">
+            <h2>EXTREME 난이도</h2>
+            <p>완전 어려운 모드로 시작할까요?</p>
+            <div class="modal-buttons">
+                <button class="modal-button cancel" onclick="closeExtremeModal()">취소</button>
+                <button class="modal-button confirm" onclick="confirmExtreme()">시작</button>
+            </div>
+        </div>
+    </div>
     <script>
+        // 이스터에그: EXTREME 모드 5연타 감지
+        let logoTapTimes = [];
+        function openExtremeModal() {
+            const m = document.getElementById('extremeModal');
+            if (m) m.style.display = 'block';
+        }
+        function closeExtremeModal() {
+            const m = document.getElementById('extremeModal');
+            if (m) m.style.display = 'none';
+        }
+        function confirmExtreme() {
+            try { localStorage.setItem('difficulty', 'extreme'); } catch (e) {}
+            window.location.href = 'game.html';
+        }
+        (function setupLogoEasterEgg() {
+            const logo = document.querySelector('.game-image');
+            if (!logo) return;
+            const tapWindowMs = 900; // 1.5초 내 5회 탭
+            const handleTap = function () {
+                const now = Date.now();
+                logoTapTimes = logoTapTimes.filter(t => now - t < tapWindowMs);
+                logoTapTimes.push(now);
+                if (logoTapTimes.length >= 5) {
+                    logoTapTimes = [];
+                    openExtremeModal();
+                }
+            };
+            logo.addEventListener('click', handleTap);
+        })();
         // 페이지 로드 시 마지막 점수 표시
         window.onload = function() {
             const lastScore = localStorage.getItem('finalScore');
@@ -292,8 +332,12 @@
         // 모달 외부 클릭 시 닫기
         window.onclick = function(event) {
             const modal = document.getElementById('exitModal');
+            const extremeModal = document.getElementById('extremeModal');
             if (event.target === modal) {
                 closeModal();
+            }
+            if (event.target === extremeModal) {
+                closeExtremeModal();
             }
         }
     </script>

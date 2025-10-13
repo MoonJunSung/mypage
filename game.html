@@ -844,10 +844,18 @@
           activeBricks.forEach(state => {
             if (state.el === collidedBrick) {
               removeBrickState(state);
-              // 단어 길이에 따른 가산점: 기본 1점 + 길이 보너스(길이-4의 절반, 최소 0)
               const word = (collidedBrick.textContent || '').trim();
-              const bonus = Math.max(0, Math.floor((word.length - 4) / 2));
-              updateScore(1 + bonus);
+              // EXTREME: 기본 5점 + 긴 단어(길이 8 이상) 보너스 +1
+              // 그 외 난이도: 기존 로직(기본 1점 + 길이 보너스(길이-4의 절반, 최소 0))
+              let pointsToAdd = 0;
+              if (difficulty === 'extreme') {
+                const longWordBonus = word.length >= 8 ? 1 : 0;
+                pointsToAdd = 5 + longWordBonus;
+              } else {
+                const lengthBonus = Math.max(0, Math.floor((word.length - 4) / 2));
+                pointsToAdd = 1 + lengthBonus;
+              }
+              updateScore(pointsToAdd);
             }
           });
         } else {
@@ -895,11 +903,13 @@
     const brickSpawnIntervalMsEasy = 5000;   // 쉬움(더 느리게)
     const brickSpawnIntervalMsNormal = 3600; // 보통(더 느리게)
     const brickSpawnIntervalMsHard = 2600;   // 어려움(조금 더 빠르게)
+    const brickSpawnIntervalMsExtreme = 1800; // 익스트림(매우 빠르게)
 
     // 난이도별 낙하 시간(길수록 느리게 떨어짐)
     const fallingLifetimeMsEasy = 30000;   // 쉬움(더 느림)
     const fallingLifetimeMsNormal = 24000; // 보통(더 느림)
     const fallingLifetimeMsHard = 18000;   // 어려움(조금 더 빠르게)
+    const fallingLifetimeMsExtreme = 14000; // 익스트림(더 빠르게)
     let fallingLifetimeMs = fallingLifetimeMsNormal;
 
     // 동시 낙하 벽돌 최대 수 제한(난이도별) - 랜덤 범위
@@ -909,10 +919,17 @@
     const maxActiveBricksNormalMax = 5;
     const maxActiveBricksHardMin = 3;
     const maxActiveBricksHardMax = 6;
+    const maxActiveBricksExtremeMin = 4;
+    const maxActiveBricksExtremeMax = 8;
     let maxActiveBricks = 3; // 기본값
 
     // localStorage에서 난이도 가져오기
       let difficulty = localStorage.getItem('difficulty') || 'normal'; // 기본 normal
+      // EXTREME 모드: 시작 목숨 6개
+      if (difficulty === 'extreme') {
+        lives = 6;
+        updateLives();
+      }
 
     // 난이도에 따라 스폰 간격 설정
     let brickSpawnIntervalMs;
@@ -925,6 +942,9 @@
           break;
       case 'hard':
           brickSpawnIntervalMs = brickSpawnIntervalMsHard;
+          break;
+      case 'extreme':
+          brickSpawnIntervalMs = brickSpawnIntervalMsExtreme;
           break;
     }
 
@@ -939,6 +959,9 @@
       case 'hard':
           fallingLifetimeMs = fallingLifetimeMsHard;
           break;
+      case 'extreme':
+          fallingLifetimeMs = fallingLifetimeMsExtreme;
+          break;
     }
 
     // 난이도에 따라 동시에 존재 가능한 벽돌 수 제한 (랜덤)
@@ -950,6 +973,8 @@
           return Math.floor(Math.random() * (maxActiveBricksNormalMax - maxActiveBricksNormalMin + 1)) + maxActiveBricksNormalMin;
         case 'hard':
           return Math.floor(Math.random() * (maxActiveBricksHardMax - maxActiveBricksHardMin + 1)) + maxActiveBricksHardMin;
+        case 'extreme':
+          return Math.floor(Math.random() * (maxActiveBricksExtremeMax - maxActiveBricksExtremeMin + 1)) + maxActiveBricksExtremeMin;
         default:
           return Math.floor(Math.random() * (maxActiveBricksNormalMax - maxActiveBricksNormalMin + 1)) + maxActiveBricksNormalMin;
       }
