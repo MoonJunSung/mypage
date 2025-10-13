@@ -276,7 +276,7 @@
         (function setupLogoEasterEgg() {
             const logo = document.querySelector('.game-image');
             if (!logo) return;
-            const tapWindowMs = 900; // 1.5초 내 5회 탭
+            const tapWindowMs = 900;
             const handleTap = function () {
                 const now = Date.now();
                 logoTapTimes = logoTapTimes.filter(t => now - t < tapWindowMs);

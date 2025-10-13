@@ -280,6 +280,103 @@
       20%, 40%, 60%, 80% { transform: translateX(5px); }
     }
 
+    /* EXTREME 그라데이션 애니메이션 */
+    @keyframes gradientMove {
+      0% { background-position: 0% 0%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 100%; }
+    }
+
+    /* EXTREME 전용 테마 */
+    body.extreme {
+      background: #0a0a0f;
+    }
+    .extreme .ambient-bg {
+      position: fixed;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        radial-gradient(900px 700px at 20% 0%, rgba(255,59,59,0.14), rgba(255,59,59,0) 60%),
+        radial-gradient(900px 700px at 80% -10%, rgba(0,229,255,0.12), rgba(0,229,255,0) 60%),
+        #07070c;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .extreme .gradient-veil {
+      position: fixed;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(120deg, rgba(255,59,59,0.08), rgba(0,229,255,0.08), rgba(255,59,59,0.08));
+      background-size: 300% 300%;
+      animation: gradientMove 18s ease-in-out infinite;
+      mix-blend-mode: screen;
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .extreme .game-area {
+      background: radial-gradient(1200px 800px at 50% -100%, rgba(255,59,59,0.12), rgba(0,0,0,0)) , #0a0a0f;
+      z-index: 1;
+    }
+    .extreme .game-area::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255,59,59,0.10), rgba(0,229,255,0.10), rgba(255,59,59,0.10));
+      background-size: 280% 280%;
+      animation: gradientMove 14s ease-in-out infinite;
+      mix-blend-mode: color-dodge;
+      opacity: 0.22;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .extreme .brick {
+      background: #111215;
+      border-color: #ff3b3b;
+      color: #ff3b3b;
+      box-shadow: 0 2px 10px rgba(255,59,59,0.15);
+    }
+    .extreme .cannon {
+      background: #ff3b3b;
+      box-shadow: 0 4px 18px rgba(255,59,59,0.25);
+    }
+    .extreme #wordInput {
+      background: #121318;
+      color: #ff3b3b;
+      border-color: #ff3b3b;
+    }
+    .extreme .exit-button {
+      background-color: #ff4757;
+    }
+    .extreme .exit-button:hover {
+      background-color: #ff3742;
+    }
+    .extreme .ball {
+      background: #00e5ff;
+      box-shadow: 0 2px 10px rgba(0,229,255,0.35);
+    }
+    .extreme .lives {
+      color: #ff4757;
+    }
+    .extreme .score {
+      color: #5af78e;
+    }
+    .extreme .character-frame {
+      border-color: #ff3b3b;
+      background: #0f1015;
+      box-shadow: 0 2px 12px rgba(255,59,59,0.18);
+    }
+    .extreme .meaning-display {
+      background: linear-gradient(135deg, #ff3b3b 0%, #7a1d1d 100%);
+    }
+
     /* 모바일 최적화 */
     @media (max-width: 768px) {
       :root {
@@ -305,6 +402,7 @@
   </style>
 </head>
 <body>
+  <div class="ambient-bg"></div>
   <div class="game-area">
     <div class="bricks" id="bricks">
       <!-- 벽돌이 여러 겹으로 생성됩니다 -->
@@ -925,8 +1023,9 @@
 
     // localStorage에서 난이도 가져오기
       let difficulty = localStorage.getItem('difficulty') || 'normal'; // 기본 normal
-      // EXTREME 모드: 시작 목숨 6개
+      // EXTREME 모드: 시작 목숨 6개 + 테마 적용
       if (difficulty === 'extreme') {
+        try { document.body.classList.add('extreme'); } catch (e) {}
         lives = 6;
         updateLives();
       }
