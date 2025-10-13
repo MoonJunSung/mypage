@@ -902,11 +902,14 @@
     const fallingLifetimeMsHard = 18000;   // 어려움(조금 더 빠르게)
     let fallingLifetimeMs = fallingLifetimeMsNormal;
 
-    // 동시 낙하 벽돌 최대 수 제한(난이도별)
-    const maxActiveBricksEasy = 2;
-    const maxActiveBricksNormal = 2;
-    const maxActiveBricksHard = 3;
-    let maxActiveBricks = maxActiveBricksNormal;
+    // 동시 낙하 벽돌 최대 수 제한(난이도별) - 랜덤 범위
+    const maxActiveBricksEasyMin = 1;
+    const maxActiveBricksEasyMax = 4;
+    const maxActiveBricksNormalMin = 2;
+    const maxActiveBricksNormalMax = 5;
+    const maxActiveBricksHardMin = 3;
+    const maxActiveBricksHardMax = 6;
+    let maxActiveBricks = 3; // 기본값
 
     // localStorage에서 난이도 가져오기
       let difficulty = localStorage.getItem('difficulty') || 'normal'; // 기본 normal
@@ -938,18 +941,22 @@
           break;
     }
 
-    // 난이도에 따라 동시에 존재 가능한 벽돌 수 제한
-    switch(difficulty) {
-      case 'easy':
-        maxActiveBricks = maxActiveBricksEasy;
-        break;
-      case 'normal':
-        maxActiveBricks = maxActiveBricksNormal;
-        break;
-      case 'hard':
-        maxActiveBricks = maxActiveBricksHard;
-        break;
+    // 난이도에 따라 동시에 존재 가능한 벽돌 수 제한 (랜덤)
+    function getRandomMaxBricks() {
+      switch(difficulty) {
+        case 'easy':
+          return Math.floor(Math.random() * (maxActiveBricksEasyMax - maxActiveBricksEasyMin + 1)) + maxActiveBricksEasyMin;
+        case 'normal':
+          return Math.floor(Math.random() * (maxActiveBricksNormalMax - maxActiveBricksNormalMin + 1)) + maxActiveBricksNormalMin;
+        case 'hard':
+          return Math.floor(Math.random() * (maxActiveBricksHardMax - maxActiveBricksHardMin + 1)) + maxActiveBricksHardMin;
+        default:
+          return Math.floor(Math.random() * (maxActiveBricksNormalMax - maxActiveBricksNormalMin + 1)) + maxActiveBricksNormalMin;
+      }
     }
+    
+    // 게임 시작 시 랜덤한 최대 벽돌 수 설정
+    maxActiveBricks = getRandomMaxBricks();
 
     // 스폰 타이머 초기화
     let brickSpawnTimer = 0;
@@ -982,15 +989,11 @@
     window.onload = function() {
       console.log('게임 시작! 난이도:', difficulty, '스폰 간격:', brickSpawnIntervalMs + 'ms');
       
-      // 첫 웨이브: 난이도별로 미리 스폰 수 조정
-      const initialSpawn = (function() {
-        switch (difficulty) {
-          case 'easy': return 2; // EASY도 여러 개 시작
-          case 'hard': return Math.min(2, maxActiveBricks);
-          case 'normal':
-          default: return 2;
-        }
-      })();
+      // 첫 웨이브: 랜덤한 개수로 스폰 (최대 벽돌 수의 50%~100%)
+      const minInitialSpawn = Math.max(1, Math.floor(maxActiveBricks * 0.5));
+      const maxInitialSpawn = maxActiveBricks;
+      const initialSpawn = Math.floor(Math.random() * (maxInitialSpawn - minInitialSpawn + 1)) + minInitialSpawn;
+      console.log('초기 벽돌 스폰:', initialSpawn, '개 (최대:', maxActiveBricks, '개)');
       for (let i = 0; i < initialSpawn; i++) spawnFallingBrick();
       // 게임 영역 기준 중앙에 대포 배치
       const gameEl = document.querySelector('.game-area');
