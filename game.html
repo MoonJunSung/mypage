@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>벽돌깨기 게임</title>
-  <link rel="icon" href="img/favicon.ico" sizes="any">
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <style>
     :root {
       --brick-width: 140px;
@@ -282,103 +280,6 @@
       20%, 40%, 60%, 80% { transform: translateX(5px); }
     }
 
-    /* EXTREME 그라데이션 애니메이션 */
-    @keyframes gradientMove {
-      0% { background-position: 0% 0%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 100%; }
-    }
-
-    /* EXTREME 전용 테마 */
-    body.extreme {
-      background: #0a0a0f;
-    }
-    .extreme .ambient-bg {
-      position: fixed;
-      left: 0;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      background:
-        radial-gradient(900px 700px at 20% 0%, rgba(255,59,59,0.14), rgba(255,59,59,0) 60%),
-        radial-gradient(900px 700px at 80% -10%, rgba(0,229,255,0.12), rgba(0,229,255,0) 60%),
-        #07070c;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .extreme .gradient-veil {
-      position: fixed;
-      left: 0;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(120deg, rgba(255,59,59,0.08), rgba(0,229,255,0.08), rgba(255,59,59,0.08));
-      background-size: 300% 300%;
-      animation: gradientMove 18s ease-in-out infinite;
-      mix-blend-mode: screen;
-      opacity: 0.35;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .extreme .game-area {
-      background: radial-gradient(1200px 800px at 50% -100%, rgba(255,59,59,0.12), rgba(0,0,0,0)) , #0a0a0f;
-      z-index: 1;
-    }
-    .extreme .game-area::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(135deg, rgba(255,59,59,0.10), rgba(0,229,255,0.10), rgba(255,59,59,0.10));
-      background-size: 280% 280%;
-      animation: gradientMove 14s ease-in-out infinite;
-      mix-blend-mode: color-dodge;
-      opacity: 0.22;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .extreme .brick {
-      background: #111215;
-      border-color: #ff3b3b;
-      color: #ff3b3b;
-      box-shadow: 0 2px 10px rgba(255,59,59,0.15);
-    }
-    .extreme .cannon {
-      background: #ff3b3b;
-      box-shadow: 0 4px 18px rgba(255,59,59,0.25);
-    }
-    .extreme #wordInput {
-      background: #121318;
-      color: #ff3b3b;
-      border-color: #ff3b3b;
-    }
-    .extreme .exit-button {
-      background-color: #ff4757;
-    }
-    .extreme .exit-button:hover {
-      background-color: #ff3742;
-    }
-    .extreme .ball {
-      background: #00e5ff;
-      box-shadow: 0 2px 10px rgba(0,229,255,0.35);
-    }
-    .extreme .lives {
-      color: #ff4757;
-    }
-    .extreme .score {
-      color: #5af78e;
-    }
-    .extreme .character-frame {
-      border-color: #ff3b3b;
-      background: #0f1015;
-      box-shadow: 0 2px 12px rgba(255,59,59,0.18);
-    }
-    .extreme .meaning-display {
-      background: linear-gradient(135deg, #ff3b3b 0%, #7a1d1d 100%);
-    }
-
     /* 모바일 최적화 */
     @media (max-width: 768px) {
       :root {
@@ -404,7 +305,6 @@
   </style>
 </head>
 <body>
-  <div class="ambient-bg"></div>
   <div class="game-area">
     <div class="bricks" id="bricks">
       <!-- 벽돌이 여러 겹으로 생성됩니다 -->
@@ -944,18 +844,10 @@
           activeBricks.forEach(state => {
             if (state.el === collidedBrick) {
               removeBrickState(state);
+              // 단어 길이에 따른 가산점: 기본 1점 + 길이 보너스(길이-4의 절반, 최소 0)
               const word = (collidedBrick.textContent || '').trim();
-              // EXTREME: 기본 5점 + 긴 단어(길이 8 이상) 보너스 +1
-              // 그 외 난이도: 기존 로직(기본 1점 + 길이 보너스(길이-4의 절반, 최소 0))
-              let pointsToAdd = 0;
-              if (difficulty === 'extreme') {
-                const longWordBonus = word.length >= 8 ? 1 : 0;
-                pointsToAdd = 5 + longWordBonus;
-              } else {
-                const lengthBonus = Math.max(0, Math.floor((word.length - 4) / 2));
-                pointsToAdd = 1 + lengthBonus;
-              }
-              updateScore(pointsToAdd);
+              const bonus = Math.max(0, Math.floor((word.length - 4) / 2));
+              updateScore(1 + bonus);
             }
           });
         } else {
@@ -1003,34 +895,21 @@
     const brickSpawnIntervalMsEasy = 5000;   // 쉬움(더 느리게)
     const brickSpawnIntervalMsNormal = 3600; // 보통(더 느리게)
     const brickSpawnIntervalMsHard = 2600;   // 어려움(조금 더 빠르게)
-    const brickSpawnIntervalMsExtreme = 1800; // 익스트림(매우 빠르게)
 
     // 난이도별 낙하 시간(길수록 느리게 떨어짐)
     const fallingLifetimeMsEasy = 30000;   // 쉬움(더 느림)
     const fallingLifetimeMsNormal = 24000; // 보통(더 느림)
     const fallingLifetimeMsHard = 18000;   // 어려움(조금 더 빠르게)
-    const fallingLifetimeMsExtreme = 14000; // 익스트림(더 빠르게)
     let fallingLifetimeMs = fallingLifetimeMsNormal;
 
-    // 동시 낙하 벽돌 최대 수 제한(난이도별) - 랜덤 범위
-    const maxActiveBricksEasyMin = 1;
-    const maxActiveBricksEasyMax = 4;
-    const maxActiveBricksNormalMin = 2;
-    const maxActiveBricksNormalMax = 5;
-    const maxActiveBricksHardMin = 3;
-    const maxActiveBricksHardMax = 6;
-    const maxActiveBricksExtremeMin = 4;
-    const maxActiveBricksExtremeMax = 8;
-    let maxActiveBricks = 3; // 기본값
+    // 동시 낙하 벽돌 최대 수 제한(난이도별)
+    const maxActiveBricksEasy = 2;
+    const maxActiveBricksNormal = 2;
+    const maxActiveBricksHard = 3;
+    let maxActiveBricks = maxActiveBricksNormal;
 
     // localStorage에서 난이도 가져오기
       let difficulty = localStorage.getItem('difficulty') || 'normal'; // 기본 normal
-      // EXTREME 모드: 시작 목숨 6개 + 테마 적용
-      if (difficulty === 'extreme') {
-        try { document.body.classList.add('extreme'); } catch (e) {}
-        lives = 6;
-        updateLives();
-      }
 
     // 난이도에 따라 스폰 간격 설정
     let brickSpawnIntervalMs;
@@ -1043,9 +922,6 @@
           break;
       case 'hard':
           brickSpawnIntervalMs = brickSpawnIntervalMsHard;
-          break;
-      case 'extreme':
-          brickSpawnIntervalMs = brickSpawnIntervalMsExtreme;
           break;
     }
 
@@ -1060,29 +936,20 @@
       case 'hard':
           fallingLifetimeMs = fallingLifetimeMsHard;
           break;
-      case 'extreme':
-          fallingLifetimeMs = fallingLifetimeMsExtreme;
-          break;
     }
 
-    // 난이도에 따라 동시에 존재 가능한 벽돌 수 제한 (랜덤)
-    function getRandomMaxBricks() {
-      switch(difficulty) {
-        case 'easy':
-          return Math.floor(Math.random() * (maxActiveBricksEasyMax - maxActiveBricksEasyMin + 1)) + maxActiveBricksEasyMin;
-        case 'normal':
-          return Math.floor(Math.random() * (maxActiveBricksNormalMax - maxActiveBricksNormalMin + 1)) + maxActiveBricksNormalMin;
-        case 'hard':
-          return Math.floor(Math.random() * (maxActiveBricksHardMax - maxActiveBricksHardMin + 1)) + maxActiveBricksHardMin;
-        case 'extreme':
-          return Math.floor(Math.random() * (maxActiveBricksExtremeMax - maxActiveBricksExtremeMin + 1)) + maxActiveBricksExtremeMin;
-        default:
-          return Math.floor(Math.random() * (maxActiveBricksNormalMax - maxActiveBricksNormalMin + 1)) + maxActiveBricksNormalMin;
-      }
+    // 난이도에 따라 동시에 존재 가능한 벽돌 수 제한
+    switch(difficulty) {
+      case 'easy':
+        maxActiveBricks = maxActiveBricksEasy;
+        break;
+      case 'normal':
+        maxActiveBricks = maxActiveBricksNormal;
+        break;
+      case 'hard':
+        maxActiveBricks = maxActiveBricksHard;
+        break;
     }
-    
-    // 게임 시작 시 랜덤한 최대 벽돌 수 설정
-    maxActiveBricks = getRandomMaxBricks();
 
     // 스폰 타이머 초기화
     let brickSpawnTimer = 0;
@@ -1115,11 +982,15 @@
     window.onload = function() {
       console.log('게임 시작! 난이도:', difficulty, '스폰 간격:', brickSpawnIntervalMs + 'ms');
       
-      // 첫 웨이브: 랜덤한 개수로 스폰 (최대 벽돌 수의 50%~100%)
-      const minInitialSpawn = Math.max(1, Math.floor(maxActiveBricks * 0.5));
-      const maxInitialSpawn = maxActiveBricks;
-      const initialSpawn = Math.floor(Math.random() * (maxInitialSpawn - minInitialSpawn + 1)) + minInitialSpawn;
-      console.log('초기 벽돌 스폰:', initialSpawn, '개 (최대:', maxActiveBricks, '개)');
+      // 첫 웨이브: 난이도별로 미리 스폰 수 조정
+      const initialSpawn = (function() {
+        switch (difficulty) {
+          case 'easy': return 2; // EASY도 여러 개 시작
+          case 'hard': return Math.min(2, maxActiveBricks);
+          case 'normal':
+          default: return 2;
+        }
+      })();
       for (let i = 0; i < initialSpawn; i++) spawnFallingBrick();
       // 게임 영역 기준 중앙에 대포 배치
       const gameEl = document.querySelector('.game-area');
