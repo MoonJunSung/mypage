@@ -141,6 +141,11 @@ a:hover {
   background: var(--card);
 }
 
+/* 강제로 새 행의 첫 칸에서 시작 */
+.skills li.break-row-start {
+  grid-column: 1;
+}
+
 .projects {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
